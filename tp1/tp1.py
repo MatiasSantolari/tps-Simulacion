@@ -28,6 +28,36 @@ def cargarDesvio(varianza):
     desvio = math.sqrt(varianza)
     return desvio
 
+def frecuenciaRelativa(listaNros, a):
+    fa = listaNros.count(a)
+    fr = fa / nrosPorTirada
+    return fr
+
+def graficar_estadisticas(listaPromedios, listaVarianzas, listaDesvios, listaFrecuencias):
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+
+    axs[0, 0].plot(listaPromedios)
+    axs[0, 0].set_title('Promedios')
+
+    axs[0, 1].plot(listaVarianzas)
+    axs[0, 1].set_title('Varianzas')
+
+    axs[1, 0].plot(listaDesvios)
+    axs[1, 0].set_title('Desvíos')
+
+    axs[1, 1].plot(listaPromedios, color='blue', label='Promedios')
+    axs[1, 1].plot(listaVarianzas, color='orange', label='Varianzas')
+    axs[1, 1].plot(listaDesvios, color='green', label='Desvíos')
+    axs[1, 1].plot(listaFrecuencias, color='red', label='Frecuencias Relativas')
+    axs[1, 1].legend(loc='upper left')
+    axs[1, 1].set_title('Promedios,Varianzas,Desvios,Frecuencias Relativas')
+
+    plt.show()
+
+    plt.plot(listaFrecuencias)
+    plt.legend()
+    plt.show()
+
 cantNrosRuleta = 39
 nrosPorTirada = 100
 listaNros, promedio, varianza, desvio = [], [], [], []
@@ -35,39 +65,29 @@ listasNros, promedios, frecuencias, varianzas, desvios  = [], [], [], [], []
 """la listaNros es una lista que contiene los 100 nros que hayan salido en la tirada actuali
     mientras que listasNros contiene todas las listaNros"""
 
-listaNros = cargarListaNros(nrosPorTirada)
-promedio = cargarPromedio(listaNros, nrosPorTirada)
-promedios.append(promedio)
-varianza = cargarVarianza(listaNros,promedio,nrosPorTirada)
-varianzas.append(varianza)
-desvio = cargarDesvio(varianza)
-desvios.append(desvio)
+a = random.randint(0, 38)
+
+for i in range(0,25):
+    listaNros = cargarListaNros(nrosPorTirada)
+
+    promedio = cargarPromedio(listaNros, nrosPorTirada)
+    promedios.append(promedio)
+
+    varianza = cargarVarianza(listaNros, promedio, nrosPorTirada)
+    varianzas.append(varianza)
+
+    desvio = cargarDesvio(varianza)
+    desvios.append(desvio)
+
+    fr = frecuenciaRelativa(listaNros,a)
+    frecuencias.append(fr)
+
+print("promedios: ", promedios)
+print("varianzas: ", varianzas)
+print("desvios: ", desvios)
+print("frecuencias: ", frecuencias)
+
+graficar_estadisticas(promedios,varianzas,desvios,frecuencias)
 
 
 
-
-
-# Definir una lista de desviaciones estándar
-desviaciones = [1.5, 2.1, 0.8, 1.9, 1.1, 1.6, 2.3, 1.7, 2.2, 2.0]
-
-# Calcular el promedio de las desviaciones
-promedio = sum(desviaciones) / len(desviaciones)
-
-# Crear una lista de valores x para los puntos de la función lineal
-x = list(range(len(desviaciones)))
-
-# Crear una lista de valores y para los puntos de la función lineal
-y = [promedio] * len(desviaciones)
-
-# Crear el gráfico
-plt.plot(x, desviaciones, label='Desviaciones')
-plt.plot(x, y, label='Promedio')
-
-# Configurar el gráfico
-plt.title('Desviaciones estándar')
-plt.xlabel('Índice')
-plt.ylabel('Desviación estándar')
-plt.legend()
-
-# Mostrar el gráfico
-plt.show()
