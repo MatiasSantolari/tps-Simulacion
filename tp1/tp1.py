@@ -44,17 +44,30 @@ desvio = cargarDesvio(varianza)
 desvios.append(desvio)
 
 
-# Lista de 10 varianzas
-variances = [1.2, 2.5, 3.1, 0.9, 1.6, 2.3, 1.8, 2.7, 3.2, 1.5]
 
-# Creamos una lista de números del 0 al 9 para etiquetar las barras
-indices = range(len(variances))
 
-# Creamos el gráfico de barras utilizando la función bar de matplotlib
-plt.bar(indices, variances)
 
-# Añadimos las etiquetas del eje x con la función xticks de matplotlib
-plt.xticks(indices, indices)
+# Definir una lista de desviaciones estándar
+desviaciones = [1.5, 2.1, 0.8, 1.9, 1.1, 1.6, 2.3, 1.7, 2.2, 2.0]
 
-# Mostramos el gráfico
+# Calcular el promedio de las desviaciones
+promedio = sum(desviaciones) / len(desviaciones)
+
+# Crear una lista de valores x para los puntos de la función lineal
+x = list(range(len(desviaciones)))
+
+# Crear una lista de valores y para los puntos de la función lineal
+y = [promedio] * len(desviaciones)
+
+# Crear el gráfico
+plt.plot(x, desviaciones, label='Desviaciones')
+plt.plot(x, y, label='Promedio')
+
+# Configurar el gráfico
+plt.title('Desviaciones estándar')
+plt.xlabel('Índice')
+plt.ylabel('Desviación estándar')
+plt.legend()
+
+# Mostrar el gráfico
 plt.show()
