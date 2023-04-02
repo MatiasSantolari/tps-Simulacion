@@ -1,14 +1,14 @@
-import random;
-import math
+import random
 import matplotlib.pyplot as plt
+import numpy as np
 
 #genero una lista de 100 numeros aleatorios entre 0 y 38
 def cargarListaNros(nrosPorTirada):
-    listaNros = [];
-    b = 0;
+    listaNros = []
+    b = 0
     for i in range(0, nrosPorTirada):
-        b = random.randint(0, 38);
-        listaNros.append(b);
+        b = random.randint(0, 36)
+        listaNros.append(b)
     return listaNros
 #promedio = suma de todos los elementos de la muestra dividido dicha cantidad de elementos
 def cargarPromedio(listaNros, nrosPorTirada):
@@ -16,78 +16,119 @@ def cargarPromedio(listaNros, nrosPorTirada):
     promedio = suma/nrosPorTirada
     return promedio
 #varianza mide que tan lejos está la muestra de lo que dió el promedio de dicha muestra
-def cargarVarianza(listaNros, promedio, nrosPorTirada):
-    sumatoria = 0
-    for i in range(0, nrosPorTirada):
-        sumatoria = sumatoria + (listaNros[i]-promedio)
-    varianzaAlCuadrado = (sumatoria ** 2)/(nrosPorTirada - 1)
-    varianza = math.sqrt(varianzaAlCuadrado)
+def cargarVarianza(listaNros):
+    varianza = np.var(listaNros)
     return varianza
 #desvio estandar = raiz cuadrada de la varianza
-def cargarDesvio(varianza):
-    desvio = math.sqrt(varianza)
+def cargarDesvio(listaNros):
+    desvio = np.std(listaNros)
     return desvio
-
 def frecuenciaRelativa(listaNros, a):
     fa = listaNros.count(a)
     fr = fa / nrosPorTirada
     return fr
-
-def graficar_estadisticas(listaPromedios, listaVarianzas, listaDesvios, listaFrecuencias):
-    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
-
-    axs[0, 0].plot(listaPromedios)
-    axs[0, 0].set_title('Promedios')
-
-    axs[0, 1].plot(listaVarianzas)
-    axs[0, 1].set_title('Varianzas')
-
-    axs[1, 0].plot(listaDesvios)
-    axs[1, 0].set_title('Desvíos')
-
-    axs[1, 1].plot(listaPromedios, color='blue', label='Promedios')
-    axs[1, 1].plot(listaVarianzas, color='orange', label='Varianzas')
-    axs[1, 1].plot(listaDesvios, color='green', label='Desvíos')
-    axs[1, 1].plot(listaFrecuencias, color='red', label='Frecuencias Relativas')
-    axs[1, 1].legend(loc='upper left')
-    axs[1, 1].set_title('Promedios,Varianzas,Desvios,Frecuencias Relativas')
-
-    plt.show()
-
-    plt.plot(listaFrecuencias)
+def graficar_estadisticas(listaPromedios, listaVarianzas, listaDesvios, listaFrecuencias, frecuenciaEsperada):
+    #graficar promedios
+    plt.plot(listaPromedios)
+    plt.axhline(37 / 2, color='r', linestyle='-', label="vpe valor promedio esperado")
     plt.legend()
+    plt.xlabel("n (número de tiradas)")
+    plt.ylabel("vp valor promedio de las tiradas")
+    plt.title('Promedio en 200 tiradas de 100 jugadas')
+    plt.show()
+    #graficar varianzas
+    plt.plot(listaVarianzas)
+    plt.xlabel("n (número de tiradas)")
+    plt.ylabel("v varianza de cada una de las tiradas")
+    plt.title('Varianza en 200 tiradas de 100 jugadas')
+    plt.show()
+    #graficar desvios
+    plt.plot(listaDesvios)
+    plt.xlabel("n (número de tiradas)")
+    plt.ylabel("d desvio de cada una de las tiradas")
+    plt.title('Desvio en 200 jugadas de 100 tiradas')
+    plt.show()
+    #graficar frecuencias
+    plt.plot(listaFrecuencias)
+    plt.axhline(frecuenciaEsperada, color='r', linestyle='-', label="fe frecuencia esperada")
+    plt.legend()
+    plt.xlabel("n (número de tiradas)")
+    plt.ylabel("f frec. relativa de cada una de las tiradas")
+    plt.title('Frec. relativa en 200 jugadas de 100 tiradas')
     plt.show()
 
-cantNrosRuleta = 39
+def main(nrosPorTirada,a):
+    listasNros, promedios, frecuencias, varianzas, desvios = [], [], [], [], []
+
+    for i in range(0, 200):
+        listaNros = cargarListaNros(nrosPorTirada)
+
+        promedio = cargarPromedio(listaNros, nrosPorTirada)
+        promedios.append(promedio)
+
+        varianza = cargarVarianza(listaNros)
+        varianzas.append(varianza)
+
+        desvio = cargarDesvio(listaNros)
+        desvios.append(desvio)
+
+        fr = frecuenciaRelativa(listaNros, a)
+        frecuencias.append(fr)
+
+    return listasNros, promedios, frecuencias, varianzas, desvios
+################################################################################################
+cantNrosRuleta = 37
 nrosPorTirada = 100
-listaNros, promedio, varianza, desvio = [], [], [], []
-listasNros, promedios, frecuencias, varianzas, desvios  = [], [], [], [], []
-"""la listaNros es una lista que contiene los 100 nros que hayan salido en la tirada actuali
-    mientras que listasNros contiene todas las listaNros"""
+frecuenciaEsperada = 1/cantNrosRuleta
+a = random.randint(0, cantNrosRuleta - 1) #elijo un numero al azar
 
-a = random.randint(0, 38)
+listasNros, promedios, frecuencias, varianzas, desvios = [], [], [], [], []
+listasNros, promedios, frecuencias, varianzas, desvios = main(nrosPorTirada,a)
+graficar_estadisticas(promedios, varianzas, desvios, frecuencias, frecuenciaEsperada)
 
-for i in range(0,25):
-    listaNros = cargarListaNros(nrosPorTirada)
+familiaPromedios,familiaFrecuencia, familiaVarianzas,familiaDesvios = [],[],[],[]
 
-    promedio = cargarPromedio(listaNros, nrosPorTirada)
-    promedios.append(promedio)
+for j in range(3):
+    listasNros, promedios, frecuencias, varianzas, desvios = main(nrosPorTirada, a)
+    familiaPromedios.append(promedios)
+    familiaFrecuencia.append(frecuencias)
+    familiaVarianzas.append(varianzas)
+    familiaDesvios.append(desvios)
 
-    varianza = cargarVarianza(listaNros, promedio, nrosPorTirada)
-    varianzas.append(varianza)
+#graficar promedios
+for k in range(3):
+    plt.plot(familiaPromedios[k])
+plt.axhline(37 / 2, color='r', linestyle='-', label="vpe valor promedio esperado")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vp valor promedio de las tiradas")
+plt.title('Promedio en 200 tiradas de 100 jugadas x 3')
+plt.show()
+#graficar varianzas
+for k in range(3):
+    plt.plot(familiaVarianzas[k])
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("v varianza de cada una de las tiradas")
+plt.title('Varianza en 200 tiradas de 100 jugadas x 3')
+plt.show()
+#graficar desvios
+for k in range(3):
+    plt.plot(familiaDesvios[k])
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("d desvio de cada una de las tiradas")
+plt.title('Desvio en 200 jugadas de 100 tiradas x 3')
+plt.show()
+#graficar frecuencias
+for k in range(3):
+    plt.plot(familiaFrecuencia[k])
+plt.axhline(frecuenciaEsperada, color='r', linestyle='-', label="fe frecuencia esperada")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("f frec. relativa de cada una de las tiradas")
+plt.title('Frec. relativa en 200 jugadas de 100 tiradas x 3')
+plt.show()
 
-    desvio = cargarDesvio(varianza)
-    desvios.append(desvio)
 
-    fr = frecuenciaRelativa(listaNros,a)
-    frecuencias.append(fr)
-
-print("promedios: ", promedios)
-print("varianzas: ", varianzas)
-print("desvios: ", desvios)
-print("frecuencias: ", frecuencias)
-
-graficar_estadisticas(promedios,varianzas,desvios,frecuencias)
 
 
 
