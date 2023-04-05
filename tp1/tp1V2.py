@@ -1,57 +1,124 @@
 import matplotlib.pyplot as plt
+import random
 import numpy as np
 
-def calcular_estadisticas(datos):
-    listaPromedios = []
-    listaVarianzas = []
-    listaDesvios = []
 
-    for lista in datos:
-        promedio = np.mean(lista)
-        varianza = np.var(lista)
-        desvio = np.std(lista)
-        listaPromedios.append(promedio)
-        listaVarianzas.append(varianza)
-        listaDesvios.append(desvio)
+def genera_lista_muestras(cantidad_numeros_aleatorios, rango_desde, rango_hasta):
+    lista = []
+    for i in range(cantidad_numeros_aleatorios):
+        numero_aleatorio = random.randint(rango_desde, rango_hasta)
+        lista.append(numero_aleatorio)
+    return lista
 
-    return listaPromedios, listaVarianzas, listaDesvios
+#frecuencia relativa de cada uno de los numeros del plato de la ruleta
+def frecuencia_relativa(lista, rango_hasta):
+    lista_frecuencias_relativas = []
+    for i in range(rango_hasta):
+        lista_frecuencias_relativas.append(lista.count(i) / len(lista))
+    return lista_frecuencias_relativas
 
-def graficar_estadisticas(listaPromedios, listaVarianzas, listaDesvios):
-    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
-
-    axs[0, 0].plot(listaPromedios)
-    axs[0, 0].set_title('Promedios')
-
-    axs[0, 1].plot(listaVarianzas)
-    axs[0, 1].set_title('Varianzas')
-
-    axs[1, 0].plot(listaDesvios)
-    axs[1, 0].set_title('Desvíos')
-
-    axs[1, 1].plot(listaPromedios, label='Promedios')
-    axs[1, 1].plot(listaVarianzas, label='Varianzas')
-    axs[1, 1].plot(listaDesvios, label='Desvíos')
-    axs[1, 1].legend(loc='upper left')
-    axs[1, 1].set_title('Todas las estadísticas')
-
-    plt.show()
+def frecuencia_relativa_nro_elegido(nroElegido, lista):
+    listaFrec = []
+    for i in range(len(lista)):
+        a = lista[:i + 1].count(nroElegido)
+        fr = a/len(lista[:i + 1])
+        listaFrec.append(fr)
+    return listaFrec
 
 
-datos = [
-    [1, 0, 3],
-    [4, 5, 6],
-    [7, 8, 9],
-    [10, 11, 12],
-    [6, 35, 15],
-    [6, 17, 2],
-    [19, 20, 21],
-    [12, 23, 24],
-    [4, 26, 7],
-    [28, 2, 30]
-]
-
-listaP,listaV,listaD = [],[],[]
-listaP,listaV,listaD = calcular_estadisticas(datos)
-graficar_estadisticas(listaP,listaV,listaD)
+def dibujar_media(lista):
+    lista_promedios_ejecucion_x = []
+    for i in range(cantidad_numeros_aleatorios):
+        lista_promedios_ejecucion_x.append(np.mean(lista[:i + 1]))
+    plt.plot(lista_promedios_ejecucion_x)
 
 
+def dibujar_varianza(lista):
+    lista_varianza_ejecucion_x = []
+    for i in range(cantidad_numeros_aleatorios):
+        lista_varianza_ejecucion_x.append(np.var(lista[:i + 1]))
+    plt.plot(lista_varianza_ejecucion_x)
+
+
+def dibujar_desvio_estandar(lista):
+    desvio_estandar_ejecucion_x = []
+    for i in range(cantidad_numeros_aleatorios):
+        desvio_estandar_ejecucion_x.append(np.std(lista[:i + 1]))
+    plt.plot(desvio_estandar_ejecucion_x)
+
+
+#################Inicio
+print("Numeros aleatorios")
+cantidad_numeros_aleatorios = 5000
+## Espacio muestral [0..36]
+rango_desde = 0
+rango_hasta = 36
+promedio = 0
+
+lista = []
+lista_promedios_muestra_n = []
+lista_desvio_estandar = []
+lista_varianza = []
+suma = 0
+
+nroElegido = random.randint(0,36)
+
+matriz_muestras = []
+
+for i in range(5):
+    matriz_muestras.append(genera_lista_muestras(cantidad_numeros_aleatorios, rango_desde, rango_hasta))
+
+for i in range(len(matriz_muestras)):
+    dibujar_media(matriz_muestras[i])
+
+plt.axhline(rango_hasta / 2, color='r', linestyle='-', label="vpe valor promedio esperado")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vp valor promedio de las tiradas")
+plt.title('Promedio en 5 jugadas de 5000 tiradas')
+plt.show()
+
+for i in range(len(matriz_muestras)):
+    dibujar_varianza(matriz_muestras[i])
+# plt.axhline([valor], color='r', linestyle='-', label = "vve valor de la varianza esperada")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vv valor de la varianza")
+plt.title('Varianza en 5 jugadas de 5000 tiradas')
+plt.show()
+
+for i in range(len(matriz_muestras)):
+    dibujar_desvio_estandar(matriz_muestras[i])
+# plt.axhline([valor], color='r', linestyle='-', label = "vve valor de la varianza esperada")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vd valor del desvío")
+plt.title('Desvio en 5 jugadas de 5000 tiradas')
+plt.show()
+
+x1 = []
+for i in range(rango_hasta + 1):
+    x1.append(i)
+
+frecuencia_esperada = 1 / (rango_hasta + 1)
+print("Frecuencia relativa esperada")
+print(frecuencia_esperada)
+lista_frecuencias = frecuencia_relativa(matriz_muestras[1], rango_hasta + 1)
+plt.ylim(0, 0.1)
+plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esperada")
+plt.legend()
+plt.bar(x1, lista_frecuencias)
+plt.ylabel('Frecuencia relativa')
+plt.xlabel('Valores posibles')
+plt.title('Frecuencias relativas')
+plt.show()
+
+#frecuencia relativa de un numero elegido aleatoriamente
+lista_frec_nro_elegido = frecuencia_relativa_nro_elegido(nroElegido,matriz_muestras[1])
+plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esperada")
+plt.legend()
+plt.ylabel('Frecuencia relativa')
+plt.xlabel("n (número de tiradas)")
+plt.title('Frecuencias relativas con respecto a un numero elegido aleatoriamente')
+plt.plot(lista_frec_nro_elegido)
+plt.show()
