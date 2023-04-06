@@ -46,6 +46,8 @@ def dibujar_desvio_estandar(lista):
         desvio_estandar_ejecucion_x.append(np.std(lista[:i + 1]))
     plt.plot(desvio_estandar_ejecucion_x)
 
+def dibujar_frecuencia_relativa(nroElegido,lista):
+    plt.plot(frecuencia_relativa_nro_elegido(nroElegido, lista))
 
 #################Inicio
 print("Numeros aleatorios")
@@ -114,11 +116,21 @@ plt.title('Frecuencias relativas')
 plt.show()
 
 #frecuencia relativa de un numero elegido aleatoriamente
-lista_frec_nro_elegido = frecuencia_relativa_nro_elegido(nroElegido,matriz_muestras[1])
+dibujar_frecuencia_relativa(nroElegido,matriz_muestras[1])
 plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esperada")
 plt.legend()
 plt.ylabel('Frecuencia relativa')
 plt.xlabel("n (número de tiradas)")
-plt.title('Frecuencias relativas con respecto a un numero elegido aleatoriamente')
-plt.plot(lista_frec_nro_elegido)
+plt.title('Frecuencia relativas con respecto a un numero elegido')
+plt.show()
+
+
+#lo mismo que antes pero con x5
+for i in range(len(matriz_muestras)):
+    dibujar_frecuencia_relativa(nroElegido,matriz_muestras[i])
+plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esperada")
+plt.legend()
+plt.ylabel('Frecuencia relativa')
+plt.xlabel("n (número de tiradas)")
+plt.title('5 Frecuencias relativas con respecto a un numero elegido')
 plt.show()
