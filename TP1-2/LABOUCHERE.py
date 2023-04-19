@@ -17,69 +17,71 @@ matriz_tipos_apuestas = [numero_par, numero_impar, numero_rojo, numero_negro, do
 
 # LABOUCHERE CON CAPITAL FINITO
 def labouchere(capital, secuencia, repeticiones):
-    secuenciaAux = secuencia
+    secuenciaAux = secuencia.copy()
     capitalAux = capital
     historial_capital = []
     total_ganadas = []
     for i in range(repeticiones):
-        apuesta = secuencia[0] + secuencia[-1]  # Suma el primer y último número de la secuencia para obtener la apuesta inicial
-        historial = [capital]  # Guardamos el valor del capital después de cada apuesta
-        while len(secuencia) > 0:
-            if apuesta > capital:  # Si la apuesta supera el capital disponible, se apuesta lo que queda del capital
-                apuesta = capital
-            seleccion_apuesta = random.choice(matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
-            nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
-            if nroRuleta in seleccion_apuesta:
-                resultado = 'ganar'
-            else:
-                resultado = 'perder'
-            #resultado = random.choice(['ganar', 'perder'])  # Se simula el resultado de la apuesta
-            if resultado == 'ganar':
-                total_ganadas.append(1)
-                capital += apuesta
-                historial.append(capital)  # Guardamos el valor del capital después de cada apuesta
-                secuencia = secuencia[1:-1]  # Se elimina el primer y último número de la secuencia
-                if len(secuencia) >= 2:
-                    apuesta = secuencia[0] + secuencia[-1]  # Se calcula la próxima apuesta
-                else:
-                    print("La secuencia está vacía o tiene menos de 2 elementos.")
-            else:
-                total_ganadas.append(0)
-                capital -= apuesta
-                historial.append(capital)  # Guardamos el valor del capital después de cada apuesta
-                secuencia.insert(1, apuesta)  # Se agrega el monto de la apuesta a la secuencia
-                if len(secuencia) >= 2:
-                    apuesta = secuencia[0] + secuencia[-1]  # Se calcula la próxima apuesta
-                else:
-                    print("La secuencia está vacía o tiene menos de 2 elementos.")
-                if capital <= 0:  # Si el capital llega a cero, se pierde la partida
-                    print("Te quedaste sin capital. Perdiste la partida.")
-                    break
-        if len(secuencia) == 0 and capital > 0:  # Si se completó la secuencia y aún queda capital disponible, se gana la partida
-            print("Completaste la secuencia. Ganaste la partida.")
-        historial_capital.append(historial)
-        # Graficamos el historial de capital
-        plt.plot(historial)
-        plt.xlabel('Número de tiradas')
-        plt.ylabel('Capital')
-        plt.title('LABOUCHERE - CAPITAL FINITO')
-        plt.show()
-        # # Gráfico de barras
-        x, y = [], []
-        for i in range(len(total_ganadas)):
-            x.append(i + 1)
-            y.append(sum(total_ganadas[:(i + 1)]) / (i + 1))
-        fig, ax = plt.subplots()
-        ax.bar(x=x, height=y)
-        plt.ylabel('Frecuencia relativa')
-        plt.xlabel('Número de tiradas')
-        plt.title('LABOUCHERE - CAPITAL FINITO')
-        plt.axhline(0.48, color='g', linestyle='-', label="Frecuencia relativa esperada")
-        plt.show()
+      capital = capitalAux
+      #secuencia.clear()
+      secuencia = secuenciaAux.copy()
+      total_ganadas = []
+      historial = [capital]  # Guardamos el valor del capital después de cada apuesta
+      while len(secuencia)  >= 2 and capital > 0:
+          apuesta = secuencia[0] + secuencia[-1]  # Se calcula la próxima apuesta
+          if apuesta > capital:  # Si la apuesta supera el capital disponible, se apuesta lo que queda del capital
+              apuesta = capital
+          seleccion_apuesta = random.choice(matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
+          nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
+          if nroRuleta in seleccion_apuesta:
+              resultado = 'ganar'
+          else:
+              resultado = 'perder'
+          #resultado = random.choice(['ganar', 'perder'])  # Se simula el resultado de la apuesta
+          if resultado == 'ganar':
+              total_ganadas.append(1)
+              capital += apuesta
+              print(f"Ganaste {apuesta}. Capital disponible: {capital}")
+              historial.append(capital)  # Guardamos el valor del capital después de cada apuesta
+              secuencia = secuencia[1:-1]  # Se elimina el primer y último número de la secuencia
+              if len(secuencia) >= 2:
+                  apuesta = secuencia[0] + secuencia[-1]  # Se calcula la próxima apuesta
+              else:
+                  print("La secuencia está vacía o tiene menos de 2 elementos.")
+          else:
+              total_ganadas.append(0)
+              capital -= apuesta
+              print(f"Perdiste {apuesta}. Capital disponible: {capital}")
+              historial.append(capital)  # Guardamos el valor del capital después de cada apuesta
+              secuencia.append(apuesta)  # Se agrega el monto de la apuesta a la secuencia
+              if capital <= 0:  # Si el capital llega a cero, se pierde la partida
+                  print("Te quedaste sin capital. Perdiste la partida.")
+          print(secuencia)
+      if len(secuencia) == 0 and capital > 0:  # Si se completó la secuencia y aún queda capital disponible, se gana la partida
+          print("Completaste la secuencia. Ganaste la partida.")
+      historial_capital.append(historial)
+      # Graficamos el historial de capital
+      plt.plot(historial)
+      plt.xlabel('Número de tiradas')
+      plt.ylabel('Capital')
+      plt.title('LABOUCHERE - CAPITAL FINITO')
+      plt.show()
+      # # Gráfico de barras
+      x, y = [], []
+      for i in range(len(total_ganadas)):
+          x.append(i + 1)
+          y.append(sum(total_ganadas[:(i + 1)]) / (i + 1))
+      fig, ax = plt.subplots()
+      ax.bar(x=x, height=y)
+      plt.ylabel('Frecuencia relativa')
+      plt.xlabel('Número de tiradas')
+      plt.title('LABOUCHERE - CAPITAL FINITO')
+      plt.axhline(0.48, color='g', linestyle='-', label="Frecuencia relativa esperada")
+      plt.show()
 
-        capital = capitalAux
-        secuencia = secuenciaAux
-        total_ganadas = []
+      capital = capitalAux
+      #secuencia = secuenciaAux
+      total_ganadas = []
     #graficar las 5 juntas
     for i in range(len(historial_capital)):
         plt.plot(historial_capital[i])
@@ -95,17 +97,17 @@ capital_inicial = 100
 secuencia = [10, 20, 30, 40, 50]
 labouchere(capital_inicial, secuencia, 5)
 
-
 # LABOUCHERE CON CAPITAL INFINITO
 def labouchere_infinito(secuencia, repeticiones):
-    secuenciaAux = secuencia
-    capital = 100  # Capital inicial
+    secuenciaAux = secuencia.copy()
     total_ganadas = []
     registro_historiales = []
     for i in range(repeticiones):
+        capital = 100 # Capital inicial
         historial_capital = [capital]  # Iniciamos el historial con el capital inicial
+        secuencia = secuenciaAux.copy()
         apuesta = secuencia[0] + secuencia[-1]  # Suma el primer y último número de la secuencia para obtener la apuesta inicial
-        while len(secuencia) > 0:
+        while len(secuencia)  >= 2:
             seleccion_apuesta = random.choice(matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
             nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
             if nroRuleta in seleccion_apuesta:
@@ -128,7 +130,7 @@ def labouchere_infinito(secuencia, repeticiones):
                 capital -= apuesta
                 print(f"Perdiste {apuesta}. Capital disponible: {capital}")
                 historial_capital.append(capital)  # Agregamos el nuevo capital al historial
-                secuencia.insert(1, apuesta)  # Se agrega el monto de la apuesta a la secuencia
+                secuencia.append(apuesta)  # Se agrega el monto de la apuesta a la secuencia
                 if len(secuencia) >= 2:
                     apuesta = secuencia[0] + secuencia[-1]  # Se calcula la próxima apuesta
                 else:
@@ -136,6 +138,8 @@ def labouchere_infinito(secuencia, repeticiones):
                 #if capital <= 0:  # Si el capital llega a cero, se pierde la partida
                 #    print("Te quedaste sin capital. Perdiste la partida.")
                 #    break
+            print(secuencia)
+
         if len(secuencia) == 0 and capital > 0:  # Si se completó la secuencia y aún queda capital disponible, se gana la partida
             print("Completaste la secuencia. Ganaste la partida.")
         else:
@@ -158,9 +162,8 @@ def labouchere_infinito(secuencia, repeticiones):
         plt.title('LABOUCHERE - CAPITAL INFINITO')
         plt.axhline(0.48, color='g', linestyle='-', label="Frecuencia relativa esperada")
         plt.show()
-        secuencia = secuenciaAux
         total_ganadas = []
-        # graficar las 5 juntas
+    # graficar las 5 juntas
     for i in range(len(registro_historiales)):
         plt.plot(registro_historiales[i])
     plt.ylabel('Capital')
