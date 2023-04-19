@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import random
 import numpy as np
 
-
 def genera_lista_muestras(cantidad_numeros_aleatorios, rango_desde, rango_hasta):
     lista = []
     for i in range(cantidad_numeros_aleatorios):
@@ -21,7 +20,7 @@ def frecuencia_relativa_nro_elegido(nroElegido, lista):
     listaFrec = []
     for i in range(len(lista)):
         a = lista[:i + 1].count(nroElegido)
-        fr = a/len(lista[:i + 1])
+        fr = a/(i+1)
         listaFrec.append(fr)
     return listaFrec
 
@@ -51,11 +50,15 @@ def dibujar_frecuencia_relativa(nroElegido,lista):
 
 #################Inicio
 print("Numeros aleatorios")
-cantidad_numeros_aleatorios = 5000
+cantidad_numeros_aleatorios = 1000
 ## Espacio muestral [0..36]
 rango_desde = 0
 rango_hasta = 36
 promedio = 0
+
+ve = ((37 ** 2)-1)/12
+de = np.sqrt(ve)
+prom_esperado = 15
 
 lista = []
 lista_promedios_muestra_n = []
@@ -70,6 +73,14 @@ matriz_muestras = []
 for i in range(5):
     matriz_muestras.append(genera_lista_muestras(cantidad_numeros_aleatorios, rango_desde, rango_hasta))
 
+dibujar_media(matriz_muestras[1])
+plt.axhline(rango_hasta / 2, color='r', linestyle='-', label="vpe valor promedio esperado")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vp valor promedio de las tiradas")
+plt.title('Evolucion del promedio en 1000 tiradas')
+plt.show()
+
 for i in range(len(matriz_muestras)):
     dibujar_media(matriz_muestras[i])
 
@@ -77,25 +88,42 @@ plt.axhline(rango_hasta / 2, color='r', linestyle='-', label="vpe valor promedio
 plt.legend()
 plt.xlabel("n (número de tiradas)")
 plt.ylabel("vp valor promedio de las tiradas")
-plt.title('Promedio en 5 jugadas de 5000 tiradas')
+plt.title('Evolucion del promedio en 5 jugadas de 1000 tiradas')
+plt.show()
+
+
+dibujar_varianza(matriz_muestras[1])
+plt.axhline(ve, color='r', linestyle='-', label="vve valor varianza esperada")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vv valor de la varianza")
+plt.title('Evolucion del varianza en 1000 tiradas')
 plt.show()
 
 for i in range(len(matriz_muestras)):
     dibujar_varianza(matriz_muestras[i])
-# plt.axhline([valor], color='r', linestyle='-', label = "vve valor de la varianza esperada")
+plt.axhline(ve, color='r', linestyle='-', label="vve valor varianza esperada")
 plt.legend()
 plt.xlabel("n (número de tiradas)")
 plt.ylabel("vv valor de la varianza")
-plt.title('Varianza en 5 jugadas de 5000 tiradas')
+plt.title('Evolucion del varianza en 5 jugadas de 1000 tiradas')
+plt.show()
+
+dibujar_desvio_estandar(matriz_muestras[1])
+plt.axhline(de, color='r', linestyle='-', label="vde valor desvio esperado")
+plt.legend()
+plt.xlabel("n (número de tiradas)")
+plt.ylabel("vd valor del desvío")
+plt.title('Evolucion del desvio en 1000 tiradas')
 plt.show()
 
 for i in range(len(matriz_muestras)):
     dibujar_desvio_estandar(matriz_muestras[i])
-# plt.axhline([valor], color='r', linestyle='-', label = "vve valor de la varianza esperada")
+plt.axhline(de, color='r', linestyle='-', label="vde valor desvio esperado")
 plt.legend()
 plt.xlabel("n (número de tiradas)")
 plt.ylabel("vd valor del desvío")
-plt.title('Desvio en 5 jugadas de 5000 tiradas')
+plt.title('Evolucion del desvio en 5 jugadas de 1000 tiradas')
 plt.show()
 
 x1 = []
@@ -106,7 +134,6 @@ frecuencia_esperada = 1 / (rango_hasta + 1)
 print("Frecuencia relativa esperada")
 print(frecuencia_esperada)
 lista_frecuencias = frecuencia_relativa(matriz_muestras[1], rango_hasta + 1)
-plt.ylim(0, 0.1)
 plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esperada")
 plt.legend()
 plt.bar(x1, lista_frecuencias)
@@ -121,7 +148,7 @@ plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esp
 plt.legend()
 plt.ylabel('Frecuencia relativa')
 plt.xlabel("n (número de tiradas)")
-plt.title('Frecuencia relativas con respecto a un numero elegido')
+plt.title('Evolucion de las frecuencia relativas con respecto al Nro ' + str(nroElegido) + ' en 1000 tiradas ')
 plt.show()
 
 
@@ -132,5 +159,5 @@ plt.axhline(frecuencia_esperada, color='g', linestyle='-', label="Frecuencia esp
 plt.legend()
 plt.ylabel('Frecuencia relativa')
 plt.xlabel("n (número de tiradas)")
-plt.title('5 Frecuencias relativas con respecto a un numero elegido')
+plt.title('Evolucion de las frecuencias relativas con respecto al Nro ' + str(nroElegido) + ' en 5 jugadas de 1000 tiradas ')
 plt.show()
