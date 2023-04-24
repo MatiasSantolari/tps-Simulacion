@@ -30,7 +30,8 @@ def labouchere(capital, secuencia, repeticiones):
       while len(secuencia)  >= 2 and capital > 0:
           apuesta = secuencia[0] + secuencia[-1]  # Se calcula la próxima apuesta
           if apuesta > capital:  # Si la apuesta supera el capital disponible, se apuesta lo que queda del capital
-              apuesta = capital
+              print(f"Perdiste {apuesta}. Capital disponible: {capital} PERDISTE LA PARTIDA")
+              break
           seleccion_apuesta = random.choice(matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
           nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
           if nroRuleta in seleccion_apuesta:
@@ -93,8 +94,8 @@ def labouchere(capital, secuencia, repeticiones):
 
 # Ejemplo de uso
 print("<Labouchere-finito>")
-capital_inicial = 100
-secuencia = [10, 20, 30, 40, 50]
+capital_inicial = 300
+secuencia = [10, 20, 30, 40, 50, 50, 40, 30, 20, 10]
 labouchere(capital_inicial, secuencia, 5)
 
 # LABOUCHERE CON CAPITAL INFINITO
@@ -103,7 +104,7 @@ def labouchere_infinito(secuencia, repeticiones):
     total_ganadas = []
     registro_historiales = []
     for i in range(repeticiones):
-        capital = 100 # Capital inicial
+        capital = 300 # Capital inicial
         historial_capital = [capital]  # Iniciamos el historial con el capital inicial
         secuencia = secuenciaAux.copy()
         apuesta = secuencia[0] + secuencia[-1]  # Suma el primer y último número de la secuencia para obtener la apuesta inicial
@@ -174,6 +175,6 @@ def labouchere_infinito(secuencia, repeticiones):
 
 # Ejemplo de uso
 print("<Labouchere-infinito>")
-secuencia = [10, 20, 30, 40, 50]
+secuencia = [10, 20, 30, 40, 50, 50, 40, 30, 20, 10]
 num_tiradas = 5
 labouchere_infinito(secuencia, num_tiradas)
