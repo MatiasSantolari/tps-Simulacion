@@ -1,6 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+
 # ------------------------------ FIBONACCI ------------------------------
 def graf_historiales_fibonacci(registros, tipo):
     for i in range(len(registros)):
@@ -10,8 +11,21 @@ def graf_historiales_fibonacci(registros, tipo):
     plt.title('FIBONACCI - ' + tipo)
     plt.show()
 
+def graf_frec_rel_fibo(ppg,tipo):
+  x, y = [], []
+  x = sorted(list(set(ppg)))
+  for valor in x:
+    y.append(ppg.count(valor))
+  
+  #Gráfico de barras
+  fig, ax = plt.subplots()
+  ax.bar(x = x, height = y)
+  plt.xlabel("Número de tiradas")
+  plt.ylabel("Fr")
+  plt.title("Frecuencia relativa de obtener apuesta favorable - FIBONACCI - " + tipo)
+  plt.show()
 
-def graficar_fibonacci(historial_capital, total_ganadas, tipo):
+def graficar_fibonacci(historial_capital, ppg, tipo):
     plt.plot(historial_capital)
     plt.ylabel('Capital')
     plt.xlabel('Número de tiradas')
@@ -19,23 +33,17 @@ def graficar_fibonacci(historial_capital, total_ganadas, tipo):
     plt.show()
     # Datos
     x, y = [], []
-    for i in range(len(total_ganadas)):
-        x.append(i + 1)
-        y.append(sum(total_ganadas[:(i + 1)]) / (i + 1))
-
-    # Gráfico de barras
+    x = sorted(list(set(ppg)))
+    for valor in x:
+      y.append(ppg.count(valor))
+    
+    #Gráfico de barras
     fig, ax = plt.subplots()
-    ax.bar(x=x, height=y)
-    plt.ylabel('Frecuencia relativa')
-    plt.xlabel('Número de tiradas')
-    plt.title('FIBONACCI - ' + tipo)
-    plt.axhline(0.48, color='g', linestyle='-', label="Frecuencia relativa esperada")
+    ax.bar(x = x, height = y)
+    plt.xlabel("Número de tiradas")
+    plt.ylabel("Fr")
+    plt.title("Frecuencia relativa de obtener apuesta favorable - FIBONACCI - " + tipo)
     plt.show()
-
-    # fig, ax = plt.subplots()
-    # ax.bar(['Ganadas', 'Perdidas'], [rondas_ganadas, rondas_total - rondas_ganadas], color=['g', 'r'])
-    # plt.axhline(rondas_total/2, color='r', linestyle='-', label="vfe valor frecuencia esperado")
-    # plt.show()
 
 
 def proxima_apuesta_fibonacci(resultado, apuesta_actual, apuesta_anterior, apuesta_anterior_2):
@@ -58,24 +66,30 @@ def proxima_apuesta_fibonacci(resultado, apuesta_actual, apuesta_anterior, apues
 
 def fibonacci(capital, repeticiones):
     registro_historiales = []
+    ppg_total = []
     for _ in range(repeticiones):
         capital = 100
         rondas_ganadas = 0
         rondas_total = 0
         historial_capital = []  # al finalizar cada ronda registro el capital para después graficarlo
+        perdidas_por_ganada = [] #almacena la cantidad de tiradas que pierde antes de ganar
         total_ganadas = []  # para almacenar resultado de cada ronda
+        tirada = 0 # contador para saber cada cuantas tiradas gana (cuantas tiradas pierde antes de ganar)
         apuesta_pre_anterior = 0
         apuesta_anterior = 0
         apuesta = 1  # Empezamos apostando 1
         while capital > 0 and capital >= apuesta:
             historial_capital.append(capital)
             rondas_total += 1
+            tirada += 1
             seleccion_apuesta = random.choice(
                 matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
             nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
             # resultado = random.choice(['ganar', 'perder']) # Se simula el resultado de la apuesta
             if nroRuleta in seleccion_apuesta:
                 rondas_ganadas += 1
+                perdidas_por_ganada.append(tirada) 
+                tirada = 0 #reinicio el valor para saber cuantas tiradas jugará luego de ganar
                 total_ganadas.append(1)  # agrego uno si gana
                 capital += apuesta
                 # print(f"Ganaste {apuesta}. Capital disponible: {capital}")
@@ -90,35 +104,43 @@ def fibonacci(capital, repeticiones):
                                                                                               apuesta_anterior,
                                                                                               apuesta_pre_anterior)
         historial_capital.append(capital)
+        ppg_total.extend(perdidas_por_ganada)
         registro_historiales.append(historial_capital)
         print("RONDAS TOTALES: " + str(rondas_total))
         print("RONDAS GANADAS: " + str(rondas_ganadas))
         print("CAPITAL FINAL: " + str(capital))
         print("HISTORIAL SECUENCIA CAPITAL: " + str(historial_capital))
-        graficar_fibonacci(historial_capital, total_ganadas, 'CAPITAL FINITO')
+        graficar_fibonacci(historial_capital, perdidas_por_ganada, 'CAPITAL FINITO')
+    graf_frec_rel_fibo(ppg_total, 'Capital finito')
     graf_historiales_fibonacci(registro_historiales, 'CAPITAL FINITO')
 
 
 def fibonacci_infinito(tiradas, repeticiones):
     registro_historiales = []
+    ppg_total = []
     for _ in range(repeticiones):
         capital = 0
         rondas_ganadas = 0
         rondas_total = 0
+        perdidas_por_ganada = [] #almacena la cantidad de tiradas que pierde antes de ganar
         historial_capital = []  # al finalizar cada ronda registro el capital para después graficarlo
         total_ganadas = []  # para almacenar resultado de cada ronda
+        tirada = 0 # contador para saber cada cuantas tiradas gana (cuantas tiradas pierde antes de ganar)
         apuesta_pre_anterior = 0
         apuesta_anterior = 0
         apuesta = 1  # Empezamos apostando 1
         for _ in range(tiradas):
             historial_capital.append(capital)
             rondas_total += 1
+            tirada += 1
             seleccion_apuesta = random.choice(
                 matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
             nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
             # resultado = random.choice(['ganar', 'perder']) # Se simula el resultado de la apuesta
             if nroRuleta in seleccion_apuesta:
                 rondas_ganadas += 1
+                perdidas_por_ganada.append(tirada) 
+                tirada = 0 #reinicio el valor para saber cuantas tiradas jugará luego de ganar
                 total_ganadas.append(1)  # agrego uno si gana
                 capital += apuesta
                 # print(f"Ganaste {apuesta}. Capital disponible: {capital}")
@@ -133,12 +155,14 @@ def fibonacci_infinito(tiradas, repeticiones):
                                                                                               apuesta_anterior,
                                                                                               apuesta_pre_anterior)
         historial_capital.append(capital)
+        ppg_total.extend(perdidas_por_ganada)
         registro_historiales.append(historial_capital)
         print("RONDAS TOTALES: " + str(rondas_total))
         print("RONDAS GANADAS: " + str(rondas_ganadas))
         print("CAPITAL FINAL: " + str(capital))
         print("HISTORIAL SECUENCIA CAPITAL: " + str(historial_capital))
-        graficar_fibonacci(historial_capital, total_ganadas, 'CAPITAL INFINITO')
+        graficar_fibonacci(historial_capital, perdidas_por_ganada, 'CAPITAL INFINITO')
+    graf_frec_rel_fibo(ppg_total, 'capital infinito')
     graf_historiales_fibonacci(registro_historiales, 'CAPITAL INFINITO')
 
 
