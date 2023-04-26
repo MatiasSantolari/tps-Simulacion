@@ -10,6 +10,20 @@ def graf_historiales_martingala(registros, tipo):
     plt.title('MARTINGALA - ' + tipo)
     plt.show()
 
+def graf_frec_rel_mg(ppg,tipo):
+  x, y = [], []
+  x = sorted(list(set(ppg)))
+  for valor in x:
+    y.append(ppg.count(valor))
+  
+  #Gráfico de barras
+  fig, ax = plt.subplots()
+  ax.bar(x = x, height = y)
+  plt.xlabel("Número de tiradas")
+  plt.ylabel("Fr")
+  plt.title("Frecuencia relativa de obtener apuesta favorable - MARTINGALA - " + tipo)
+  plt.show()
+
 def graficar_martin_gala(historial_capital, rondas_ganadas, rondas_total, tipo):
     plt.plot(historial_capital)
     plt.ylabel('Capital')
@@ -17,6 +31,7 @@ def graficar_martin_gala(historial_capital, rondas_ganadas, rondas_total, tipo):
     plt.title('MARTINGALA - ' + tipo)
     plt.show()
     #Datos
+    """
     x, y = [], []
     for i in range(len(rondas_ganadas)):
         x.append(i + 1)
@@ -28,20 +43,26 @@ def graficar_martin_gala(historial_capital, rondas_ganadas, rondas_total, tipo):
     plt.xlabel('Número de tiradas')
     plt.title('MARTINGALA - ' + tipo)
     plt.axhline(0.48, color='g', linestyle='-', label="Frecuencia relativa esperada")
-    plt.show()
+    plt.show()"""
 
 
 def martin_gala(capital, apuesta, rondas_ganadas, rondas_total, historial_capital, nro_repeticiones):
         registro_historiales = []
+        ppg_total = []
         for i in range(nro_repeticiones):
+            tirada = 0 # contador para saber cada cuantas tiradas gana (cuantas tiradas pierde antes de ganar)
+            perdidas_por_ganada = [] #almacena la cantidad de tiradas que pierde antes de ganar
             while capital >= 0 and apuesta < capital:
                 historial_capital.append(capital)
                 rondas_total += 1
+                tirada += 1
                 seleccion_apuesta = random.choice(
                     matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
                 nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
                 if nroRuleta in seleccion_apuesta:
                     rondas_ganadas.append(1)
+                    perdidas_por_ganada.append(tirada) 
+                    tirada = 0 #reinicio el valor para saber cuantas tiradas jugará luego de ganar
                     capital += apuesta * tabla_pago.get(
                         claves_apuestas[matriz_tipos_apuestas.index(seleccion_apuesta)])  # sumo ganancia al capital
                     # multiplico la apuesta por la tabla de pagos que corresponde según la apuesta que realizó
@@ -51,13 +72,14 @@ def martin_gala(capital, apuesta, rondas_ganadas, rondas_total, historial_capita
                     capital -= apuesta  # descuento la apuesta del capital
                     apuesta = apuesta * 2  # al perder, duplico la proxima apuesta
             historial_capital.append(capital)
+            ppg_total.extend(perdidas_por_ganada)
             print("RONDAS TOTALES: " + str(rondas_total))
-            print("RONDAS GANADAS: " + str(len(rondas_ganadas)))
+            print("RONDAS GANADAS: " + str(sum(rondas_ganadas)))
             #lista_rondas.append([rondas_ganadas, rondas_total - rondas_ganadas])
             print("CAPITAL FINAL: " + str(capital))
             print("HISTORIAL CAPITAL GANADO: " + str(historial_capital))
             graficar_martin_gala(historial_capital, rondas_ganadas, rondas_total, 'CAPITAL FINITO')
-
+            graf_frec_rel_mg(perdidas_por_ganada,'capital finito')
             registro_historiales.append(historial_capital)
             # reinicio los valores
             capital = 100
@@ -65,6 +87,7 @@ def martin_gala(capital, apuesta, rondas_ganadas, rondas_total, historial_capita
             rondas_ganadas = []
             rondas_total = 0
             historial_capital = []
+        graf_frec_rel_mg(ppg_total, 'total - capital finito')
         graf_historiales_martingala(registro_historiales, 'CAPITAL FINITO')
 
 
@@ -74,17 +97,22 @@ def martin_gala_infinito(capital, apuesta, rondas_ganadas, rondas_total, nro_rep
     apuesta = 1
     rondas_ganadas = []
     rondas_total = 0
+    ppg_total = []
     historial_capital = []
     registro_capital = []
     for j in range(nro_repeticiones):
-        historial_capital = []
+        perdidas_por_ganada = []
+        tirada = 0
         for i in range(nro_tiradas):
             historial_capital.append(capital)
             rondas_total += 1
+            tirada += 1
             seleccion_apuesta = random.choice(matriz_tipos_apuestas[:4])  # esto selecciona la apuesta que hará el usuario
             nroRuleta = random.randint(0, 36)  # esto selecciona el numero que saldrá en la ruleta
             if nroRuleta in seleccion_apuesta:
                 rondas_ganadas.append(1)
+                perdidas_por_ganada.append(tirada) 
+                tirada = 0 #reinicio el valor para saber cuantas tiradas jugará luego de ganar
                 capital += apuesta * tabla_pago.get(
                     claves_apuestas[matriz_tipos_apuestas.index(seleccion_apuesta)])  # sumo ganancia al capital
                 # multiplico la apuesta por la tabla de pagos que corresponde según la apuesta que realizó
@@ -94,18 +122,21 @@ def martin_gala_infinito(capital, apuesta, rondas_ganadas, rondas_total, nro_rep
                 capital -= apuesta  # descuento la apuesta del capital
                 apuesta = apuesta * 2  # al perder, duplico la proxima apuesta
         historial_capital.append(capital)
+        ppg_total.extend(perdidas_por_ganada)
         print("RONDAS TOTALES: " + str(rondas_total))
-        print("RONDAS GANADAS: " + str(len(rondas_ganadas)))
+        print("RONDAS GANADAS: " + str(sum(rondas_ganadas)))
         print("CAPITAL FINAL: " + str(capital))
         print("HISTORIAL SECUENCIA CAPITAL: " + str(historial_capital))
         registro_capital.append(historial_capital)
         graficar_martin_gala(historial_capital, rondas_ganadas, rondas_total, 'CAPITAL INFINITO')
+        graf_frec_rel_mg(perdidas_por_ganada, 'capital infinito')
         # reinicio los valores
         capital = 100
         apuesta = 1
         rondas_ganadas = []
         rondas_total = 0
         historial_capital = []
+    graf_frec_rel_mg(ppg_total, 'total - capital infinito')
     graf_historiales_martingala(registro_capital, 'CAPITAL INFINITO')
 
 docena_primera = [x for x in range(1, 13)]
