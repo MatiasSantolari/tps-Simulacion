@@ -41,7 +41,9 @@ class Queue_mm1():
         self.next_event_type = 0
 
         self.clientes_denegados = 0
-        self.probI = [] #probabilidades de que haya n clientes en cola
+        self.probI = [0 for i in range(100)] #probabilidades de que haya n clientes en cola
+        self.denegacionServ = [0 for i in range(100)]
+        self.clientes = 0
 
         self.qdet = []
         self.qdet.append(self.area_num_in_q)
@@ -65,12 +67,12 @@ class Queue_mm1():
         self.time_next_event[1] = self.time + self.expon(self.mean_interarrival)
 
         if self.server_status == 1:
-            self.num_in_q += 1
             if self.num_in_q >= len(self.probI):
               self.probI.extend([0] * (self.num_in_q - len(self.probI) + 1))
             self.probI[self.num_in_q] += 1
+            self.num_in_q += 1
             # Si la cola está llena
-            if (self.num_in_q > self.cola_maxima):
+            if (self.cola_maxima and (self.num_in_q > self.cola_maxima or self.cola_maxima == 0)):
                 self.clientes_denegados += 1
                 self.num_in_q -= 1
             else:
@@ -90,8 +92,10 @@ class Queue_mm1():
             self.time_next_event[2] = 10 ** 30
         else:
             self.num_in_q -= 1
+            self.probI[self.num_in_q] += 1
             self.delay = self.time - self.time_arrival[1]
             self.total_of_delays += self.delay
+
 
             self.nums_custs_delayed += 1
             self.time_next_event[2] = self.time + self.expon(self.mean_service)
@@ -103,9 +107,13 @@ class Queue_mm1():
         self.time_since_last_event = self.time - self.time_last_event
         self.time_last_event = self.time
 
+        if self.cola_maxima is not None:
+          self.denegacionServ[self.num_in_q] += self.time_since_last_event
+
         self.qdet.append(self.num_in_q * self.time_since_last_event / self.time)
         self.area_num_in_q += self.num_in_q * self.time_since_last_event
         self.area_server_status += self.server_status * self.time_since_last_event
+
 
     def expon(self, mean):
         u = random()
@@ -125,6 +133,8 @@ class Queue_mm1():
             historial_tiempo_sist = []
             historial_tiempo_cola = []
             historial_utilización_servidor = []
+            historial_denegacion = []
+            historial_deneg = []
 
             historico_cola_simulacion = []
             historico_sistema_simuacion = []
@@ -143,6 +153,7 @@ class Queue_mm1():
 
                 if self.next_event_type == 1:
                     self.arrive()
+                    self.clientes += 1
                 elif self.next_event_type == 2:
                     self.depart()
 
@@ -156,13 +167,17 @@ class Queue_mm1():
                 historial_tiempo_sist.append(medidas['tiempo_promedio_sistema'])
                 historial_tiempo_cola.append(medidas['tiempo_promedio_cola'])
                 historial_utilización_servidor.append(medidas['utilizacion_servidor'])
+                if self.cola_maxima is not None:
+                  historial_denegacion.append(medidas["denegacion_servicio"])
+                  historial_deneg.append(medidas["denegacion"])
 
                 if self.server_status == 1:
                     historico_sistema_simuacion.append(self.num_in_q + 1)
                 else:
                     historico_sistema_simuacion.append(self.num_in_q)
 
-            historiales.append([historial_clientes_sist, historial_clientes_cola, historial_tiempo_sist, historial_tiempo_cola, historial_utilización_servidor])
+            historiales.append([historial_clientes_sist, historial_clientes_cola, historial_tiempo_sist, historial_tiempo_cola, historial_utilización_servidor,
+                                historial_denegacion, historial_deneg])
 
             metricas = self.calcula_metricas()
             metricas_simulacion.append(metricas)
@@ -196,10 +211,11 @@ class Queue_mm1():
 
         titulos = ['Promedio de clientes en el sistema x10reps', 'Promedio de clientes en cola x10reps',
                    'Tiempo promedio en sistema x10reps', 'Tiempo promedio de espera en la cola x10reps',
-                   ' Porcentaje promedio de utilizacion del servidor x10reps']
+                   ' Porcentaje promedio de utilizacion del servidor x10reps','Denegacion de servicio - ',
+                   f'Denegacion de servicio con cola maxima de {self.cola_maxima} - ']
         ylabelGraf = ['promedio Ls', 'promedio Lq',
                    'tiempo Ws', 'tiempo Wq',
-                   'promedio u(t)']
+                   'promedio u(t)', 'denegacion','denegacion']
         rho = self.parameter_lambda/self.parameter_mu
 
         if rho < 1:
@@ -214,24 +230,30 @@ class Queue_mm1():
 
         analitico = [ls,lq,ws,wq,u]
 
-        for j in range(5):
+        if self.cola_maxima is not None:
+          n_max = 7
+        else:
+          n_max = 5
+
+        for j in range(n_max):
           sum = 0
+          if j != 5:
+            for i in range(len(historiales)):
+                plt.plot(historiales[i][j])
 
-          for i in range(len(historiales)):
-              plt.plot(historiales[i][j])
+                sum += average(historiales[i][j])
 
-              sum += average(historiales[i][j])
-
-          plt.xlabel("tiempo")
-          plt.ylabel(ylabelGraf[j])
-          plt.title(titulos[j] + title)
-          if analitico[j] != None:
-            plt.hlines(sum/len(historiales),0, len(historiales[0][j]), colors='darkred', lw=1,linestyles='dashed', label="Promedio")
-            plt.hlines(analitico[j],0, len(historiales[0][j]), colors='midnightblue', lw=1, label="Valor analítico")
-            plt.legend()
-          else:
-            plt.annotate("No cumple condición de estabilidad (λ > μ)",xy=(3, 6))
-          plt.show()
+            plt.xlabel("tiempo")
+            plt.ylabel(ylabelGraf[j])
+            plt.title(titulos[j] + title)
+            if j != 5 and j != 6:
+              if analitico[j] != None:
+                plt.hlines(sum/len(historiales),0, len(historiales[0][j]), colors='darkred', lw=1,linestyles='dashed', label="Promedio")
+                plt.hlines(analitico[j],0, len(historiales[0][j]), colors='midnightblue', lw=1, label="Valor analítico")
+                plt.legend()
+              else:
+                plt.annotate("No cumple condición de estabilidad (λ > μ)",xy=(3, 6))
+            plt.show()
 
 
     def calcula_metricas(self):
@@ -245,7 +267,10 @@ class Queue_mm1():
         utilizacion_servidor = self.area_server_status / self.time
 
         if self.cola_maxima is not None:
-            denegacion_servicio = self.clientes_denegados / promedio_clientes_sistema
+            denegacion_servicio = (self.clientes_denegados / self.clientes)*10
+            deneg = (self.clientes_denegados/self.clientes)
+
+
 
         metricas['promedio_clientes_cola'] = promedio_clientes_cola
         metricas['promedio_clientes_sistema'] = promedio_clientes_sistema
@@ -255,6 +280,7 @@ class Queue_mm1():
 
         if self.cola_maxima is not None:
             metricas['denegacion_servicio'] = denegacion_servicio
+            metricas['denegacion'] = deneg
 
         return metricas
 
@@ -326,7 +352,7 @@ class Queue_mm1():
             utilizacion_servidor.append(m['utilizacion_servidor'])
 
             if self.cola_maxima is not None:
-                denegacion_servicio.append(m['denegacion_servicio'])
+                denegacion_servicio.append(m['denegacion'])
 
         clientes_cola_avg = clientes_cola
         clientes_sistema_avg = clientes_sistema
@@ -345,7 +371,7 @@ class Queue_mm1():
         metricas['utilizacion_servidor_avg'] = utilizacion_servidor_avg
 
         if self.cola_maxima is not None:
-            metricas['denegacion_servicio_avg'] = denegacion_servicio_avg
+            metricas['denegacion_avg'] = denegacion_servicio_avg
 
         return metricas
 
@@ -476,6 +502,8 @@ class Queue_mm1():
         m3 = metricas['tiempo_promedio_cola_avg']
         m4 = metricas['tiempo_promedio_sistema_avg']
         m5 = metricas['utilizacion_servidor_avg']
+        if self.cola_maxima is not None:
+          m7 = metricas['denegacion_avg']
 
         leyendas = ['Metrica', 'Media', 'Mediana', 'Desvio Estandar']
         promedio_clientes_cola = ['Promedio clientes en cola', str(round(average(m1), 3)), str(round(median(m1), 3)),
@@ -488,12 +516,22 @@ class Queue_mm1():
                                    str(round(std(m4), 3))]
         utilizacion_servidor = ['Utilizacion del servidor', str(round(average(m5), 3)), str(round(median(m5), 3)),
                                 str(round(std(m5), 3))]
-
-        reporte = [promedio_clientes_cola, promedio_clientes_sistema, tiempo_promedio_cola, tiempo_promedio_sistema,
+        if self.cola_maxima is not None:          
+          denegacion = ['Denegación de servicio', str(round(average(m7), 5)), str(round(median(m7), 5)),
+                                str(round(std(m7), 5))]
+        if self.cola_maxima is not None:
+          reporte = [promedio_clientes_cola, promedio_clientes_sistema, tiempo_promedio_cola, tiempo_promedio_sistema,
+                   utilizacion_servidor,denegacion]
+        else:
+          reporte = [promedio_clientes_cola, promedio_clientes_sistema, tiempo_promedio_cola, tiempo_promedio_sistema,
                    utilizacion_servidor]
 
         # Informa estadísticos en forma tabular
         print(tabulate(reporte, headers=leyendas))
+        if self.cola_maxima is not None:
+          for k in range(self.cola_maxima):
+              print(str(k) + " >> " + str(self.denegacionServ[k]/self.time))
+          print("")
 
 
     def reporte_frecuencias(self, frecuencias_cola_grafica, frecuencias_sistema_grafica):
@@ -524,7 +562,7 @@ if __name__ == "__main__":
     num_events = 2
     mean_service = 0.5
     num_delays_required = 10000
-    Q_LIMIT = 1000
+    Q_LIMIT = None
 
     tamaños_cola = [0, 2, 5, 10, 50]
     par_mu = 1 / mean_service
@@ -541,7 +579,7 @@ if __name__ == "__main__":
         metricas, frecuencias_cola, frecuencias_sistema = mm1.simmulate(cant_simulaciones)
 
         # Métricas promedios
-        mm1.grafica_metricas(metricas)
+        #mm1.grafica_metricas(metricas)
         mm1.reporte_metricas(metricas)
 
         # Métricas promedios acumulados
@@ -550,5 +588,5 @@ if __name__ == "__main__":
 
         # Gráficas Frecuencias
         frecuencias_cola_grafica, frecuencias_sistema_grafica = mm1.obtiene_promedios_frecuencias(frecuencias_cola, frecuencias_sistema)
-        mm1.reporte_frecuencias(frecuencias_cola_grafica, frecuencias_sistema_grafica)
+        #mm1.reporte_frecuencias(frecuencias_cola_grafica, frecuencias_sistema_grafica)
         mm1.grafica_cant_clientes(frecuencias_cola_grafica, frecuencias_sistema_grafica)
