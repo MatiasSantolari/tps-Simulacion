@@ -1,14 +1,14 @@
 from random import random
 from typing import Dict
 from matplotlib import pyplot as plt
+from tabulate import tabulate
 import numpy as np
 import math
-from math import sqrt, log
 
 def ExponencialT(pseudo: list, lmbda: float) -> list:
     expo = []
     for r in pseudo:
-        x = log(1-r)/(-lmbda)
+        x = math.log(1-r)/(-lmbda)
         expo.append(x)
     return expo
 
@@ -56,7 +56,7 @@ def generador_numpy(n):
 
 class Inventory():
 
-    def __init__(self, S: int, s: int, inventory_0: int = 60, backlog_0: int = 0) -> None:
+    def __init__(self, S: int, s: int, inventory_0: int, backlog_0: int = 0) -> None:
         """
         s :Minimum stock acceptable policy
         S :Reposition stock policy"""
@@ -104,8 +104,12 @@ class Inventory():
         I = sum(self.montly_bklog_check[0:m])/m
         return I*self.bklog_costs
 
-    def Run_Program(self) -> None:
+    def Run_Program(self):
         orders_delivered = 0
+        orden_costo = 0
+        escasez_costo = 0
+        mantenimiento_costo = 0
+        total_costo = 0
         items_demand = []
         customer_orders = generador_numpy(10000)
         customer_orders = ExponencialT(customer_orders, 10)
@@ -227,11 +231,37 @@ class Inventory():
             monthly_total.append((h+b+c))
         plt.plot(bk_c, label='Gasto mensual por exceso de demanda')
         plt.plot(h_c, label='Gasto mensual por mantenimiento')
-        #plt.plot(monthly_total, label='Total mensual')
+        plt.plot(monthly_total, label='Total mensual')
         plt.legend()
         #ax.set_xlim(left=0, right=120)
         plt.show()
+        total = sum(self.montly_order_costs) + sum(bk_c) + sum(h_c)
+        orden_costo += sum(self.montly_order_costs)/sum(monthly_total)
+        escasez_costo += sum(bk_c)/sum(monthly_total)
+        mantenimiento_costo += sum(h_c)/sum(monthly_total)
+        total_costo += sum(monthly_total)
 
+        return (orden_costo, escasez_costo, mantenimiento_costo, total_costo)
 
-a = Inventory(S=40, s=20, inventory_0=35)
-a.Run_Program()
+orden_costo = 0
+escasez_costo = 0
+mantenimiento_costo = 0
+total_costo = 0
+S=int(input(f"Ingrese nivel de inventario máximo (S): "))
+s=int(input(f"Ingrese nivel de inventario mínimo (s): "))
+inventory_0=int(input(f"Ingrese nivel de inventario inicial: "))
+a = Inventory(S, s, inventory_0)
+for i in range(30):
+    oc, ec, mc, tc = a.Run_Program()
+    orden_costo += oc
+    escasez_costo += ec
+    mantenimiento_costo += mc
+    total_costo += tc
+leg = ["entradas","% orden","% esc","% manten.", "total"]
+valores = [f"s={s}  S={S} I_0={inventory_0}",str(round(orden_costo*10/3,2))
+  , str(round(escasez_costo*10/3,2)), str(round(mantenimiento_costo*10/3,2)), str(round(total_costo/30,2))]
+coef = [f"s={s}  S={S} I_0={inventory_0}", str(round(orden_costo/30*(total_costo/30),2))
+  , str(round(escasez_costo/30*(total_costo/30),2)),str(round(mantenimiento_costo/30*(total_costo/30),2)),str(round(total_costo/30,2))]
+metr = [valores, coef]
+print(tabulate(metr, headers=leg))
+
